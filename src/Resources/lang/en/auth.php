@@ -18,4 +18,6 @@ return [
     'logout_success' => 'You have been successfully logged out.',
     'logout_partial_success' => 'You have been logged out locally, but Keycloak logout may have failed.',
     'already_logged_out' => 'You are already logged out.',
+    'session_expired' => 'Your session has expired. Please login again.',
+    'token_refresh_failed' => 'Failed to refresh your session. Please login again.',
 ];
