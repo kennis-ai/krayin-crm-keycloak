@@ -3,6 +3,92 @@
 ## Documentation Access
 - You can use the MCP Server deepwiki to get the latest documentation
 
+## Internationalization (i18n)
+
+### Supported Languages
+All implementations must support multiple languages from the start:
+
+- **English (en)**: Primary language, always required
+- **Brazilian Portuguese (pt_BR)**: Secondary language, always required
+
+### Implementation Guidelines
+
+#### Translation Files
+All user-facing text must have translations in both languages:
+
+**Location**: `src/Resources/lang/{locale}/`
+
+**Structure**:
+```
+src/Resources/lang/
+├── en/
+│   ├── keycloak.php       # English translations
+│   ├── messages.php
+│   └── validation.php
+└── pt_BR/
+    ├── keycloak.php       # Brazilian Portuguese translations
+    ├── messages.php
+    └── validation.php
+```
+
+#### What to Translate
+- **Views**: All text in Blade templates
+- **Flash Messages**: Success, error, info messages
+- **Form Labels**: Input labels, placeholders, help text
+- **Button Text**: Submit, cancel, action buttons
+- **Validation Messages**: Custom validation error messages
+- **Log Messages**: User-facing log entries
+- **Email Templates**: All email content
+- **Error Pages**: Error messages and descriptions
+
+#### What NOT to Translate
+- Configuration keys
+- Database column names
+- Class names and method names
+- Code comments (keep in English)
+- Technical log entries (internal debugging)
+- API endpoints and route names
+
+#### Translation Keys Convention
+Use dot notation with descriptive keys:
+
+```php
+// Good
+'auth.login_success' => 'Login successful'
+'auth.login_failed' => 'Login failed'
+'user.provisioned' => 'User account created successfully'
+
+// Bad (avoid single words)
+'success' => 'Success'
+'error' => 'Error'
+```
+
+#### Usage in Code
+Always use translation helpers:
+
+```php
+// In controllers
+return redirect()->back()->with('success', __('keycloak::auth.login_success'));
+
+// In views
+<h1>{{ __('keycloak::auth.login_title') }}</h1>
+
+// With parameters
+__('keycloak::user.welcome', ['name' => $user->name])
+```
+
+#### Testing Translations
+- Test both languages during development
+- Ensure all keys exist in both language files
+- Verify pluralization rules work correctly
+- Check date/time formatting for each locale
+
+### Quality Standards
+- **Completeness**: Every English key must have a pt_BR translation
+- **Accuracy**: Translations should be natural and idiomatic, not literal
+- **Consistency**: Use consistent terminology across the package
+- **Context**: Provide context in comments when translation might be ambiguous
+
 ## Git Workflow
 - We want to work with the best practices of gitflow and we need to create specific branches for each type of implementation: feature, fix, etc. Always consider this before implementing something on codebase.
 
