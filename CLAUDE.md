@@ -127,6 +127,246 @@ __('keycloak::user.welcome', ['name' => $user->name])
 - Update version in `composer.json` and relevant config files
 - Tag releases in git
 
+## CHANGELOG.md Management
+
+### Automatic Updates
+The CHANGELOG.md file must be updated automatically with every significant change to the codebase. This provides a clear history of all modifications for users and developers.
+
+### When to Update CHANGELOG
+Update the CHANGELOG.md file when:
+- **Completing a phase**: After finishing any implementation phase
+- **Fixing bugs**: When resolving issues or bugs
+- **Adding features**: When implementing new functionality
+- **Making breaking changes**: When modifying APIs or behavior
+- **Releasing versions**: When preparing for release
+- **Security updates**: When fixing security vulnerabilities
+- **Deprecations**: When marking features as deprecated
+
+### CHANGELOG Format
+Follow the [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) format with these sections:
+
+#### Standard Sections
+- **Added**: New features
+- **Changed**: Changes to existing functionality
+- **Deprecated**: Soon-to-be removed features
+- **Removed**: Removed features
+- **Fixed**: Bug fixes
+- **Security**: Security vulnerability fixes
+
+#### Version Structure
+```markdown
+## [Version] - YYYY-MM-DD
+
+### Added
+- New feature description
+- Another new feature
+
+### Changed
+- Modified behavior description
+
+### Fixed
+- Bug fix description (#issue-number)
+
+### Security
+- Security fix description
+```
+
+### Update Guidelines
+
+#### Phase Completion Updates
+When completing a phase, add entries like:
+
+```markdown
+## [Unreleased]
+
+### Added
+- **Phase 3**: Database schema for Keycloak integration
+  - Added `keycloak_id` column to users table
+  - Added `auth_provider` enum column
+  - Added `keycloak_refresh_token` encrypted column
+  - Added `keycloak_token_expires_at` timestamp column
+  - Created `HasKeycloakAuthentication` trait with 15+ helper methods
+  - Added performance indexes for Keycloak lookups
+```
+
+#### Bug Fix Updates
+When fixing bugs, reference the issue number:
+
+```markdown
+### Fixed
+- Fixed token refresh failing with timeout error (#15)
+- Resolved undefined array key 'email' in user provisioning (#16)
+- Corrected role mapping for administrator role (#17)
+```
+
+#### Feature Updates
+When adding features:
+
+```markdown
+### Added
+- Implemented automatic token refresh with grace period
+- Added support for multi-realm configuration
+- Created admin dashboard for Keycloak management
+```
+
+#### Breaking Changes
+Mark breaking changes clearly:
+
+```markdown
+### Changed
+- **BREAKING**: Modified KeycloakService constructor signature
+  - Now requires RoleMappingService as second parameter
+  - Update usage: `new KeycloakService($config, $roleMapper)`
+- **BREAKING**: Renamed `getToken()` to `getAccessToken()`
+```
+
+### Version Release Process
+
+#### 1. Before Release
+Update CHANGELOG with release version and date:
+
+```markdown
+## [1.0.0] - 2025-11-25
+
+### Added
+- Full OAuth 2.0 / OpenID Connect integration with Keycloak
+- Automatic user provisioning and synchronization
+...
+```
+
+#### 2. Update Unreleased Section
+Move items from `[Unreleased]` to the new version section.
+
+#### 3. Create Git Tag
+After updating CHANGELOG:
+
+```bash
+git add CHANGELOG.md
+git commit -m "chore: release version 1.0.0"
+git tag -a v1.0.0 -m "Release version 1.0.0"
+git push origin v1.0.0
+```
+
+### Automation Template
+
+Use this template when updating CHANGELOG after completing work:
+
+```bash
+# Determine the type of change
+CHANGE_TYPE="Added"  # Added, Changed, Fixed, Security, etc.
+VERSION="Unreleased"  # or specific version like "1.0.0"
+
+# Update CHANGELOG.md
+# Add entry under appropriate section in [Unreleased] or version section
+```
+
+### Example: Phase Completion Entry
+
+After completing Phase 4 (Keycloak Service), add:
+
+```markdown
+## [Unreleased]
+
+### Added
+- **Phase 4**: Keycloak Service Integration (#4)
+  - Implemented `KeycloakService` with OAuth2/OpenID Connect flows
+  - Added `getAuthorizationUrl()` for login redirection
+  - Added `handleCallback()` for OAuth callback processing
+  - Added `getUserInfo()` for user data retrieval
+  - Added `refreshToken()` for automatic token renewal
+  - Added `logout()` for Single Logout (SLO)
+  - Added `validateToken()` for token validation
+  - Added `getUserRoles()` for role retrieval
+  - Implemented comprehensive error handling and logging
+  - Created unit tests with 85% code coverage
+```
+
+### Example: Bug Fix Entry
+
+```markdown
+## [Unreleased]
+
+### Fixed
+- Fixed Keycloak token refresh failing with connection timeout (#15)
+  - Increased HTTP timeout from 10s to 30s
+  - Added retry logic with exponential backoff
+  - Improved error messages for debugging
+```
+
+### Example: Security Update Entry
+
+```markdown
+## [Unreleased]
+
+### Security
+- Fixed potential XSS vulnerability in user data display (#23)
+  - Added HTML escaping for all user-provided fields
+  - Implemented Content Security Policy headers
+  - Updated dependencies to patch known vulnerabilities
+```
+
+### Best Practices
+
+1. **Be Specific**: Include clear descriptions of what changed
+2. **Reference Issues**: Link to GitHub issues using (#issue-number)
+3. **Group Related Changes**: Keep related changes together
+4. **Use Present Tense**: "Add feature" not "Added feature" in descriptions
+5. **Highlight Breaking Changes**: Use **BREAKING** prefix
+6. **Keep Chronological Order**: Newest entries at the top
+7. **Update Regularly**: Don't let CHANGELOG get out of sync
+8. **Include Migration Notes**: For breaking changes, explain how to migrate
+
+### Migration Guide Example
+
+For breaking changes, add migration instructions:
+
+```markdown
+### Changed
+- **BREAKING**: Modified configuration structure
+  - `keycloak.client_id` moved to `keycloak.oauth.client_id`
+  - `keycloak.client_secret` moved to `keycloak.oauth.client_secret`
+
+  **Migration**: Update your `config/keycloak.php`:
+  ```php
+  // Old
+  'client_id' => env('KEYCLOAK_CLIENT_ID'),
+
+  // New
+  'oauth' => [
+      'client_id' => env('KEYCLOAK_CLIENT_ID'),
+      'client_secret' => env('KEYCLOAK_CLIENT_SECRET'),
+  ]
+  ```
+```
+
+### Commit Message for CHANGELOG Updates
+
+Use consistent commit messages:
+
+```bash
+# For phase completion
+git commit -m "docs: update CHANGELOG for Phase 4 completion"
+
+# For bug fixes
+git commit -m "docs: update CHANGELOG with bug fix #15"
+
+# For releases
+git commit -m "chore: release version 1.0.0"
+```
+
+### Quality Checklist
+
+Before committing CHANGELOG updates, verify:
+
+- [ ] Entry is under correct section (Added, Fixed, etc.)
+- [ ] Version is correct ([Unreleased] or specific version)
+- [ ] Issue numbers are referenced where applicable
+- [ ] Breaking changes are clearly marked
+- [ ] Date format is YYYY-MM-DD for releases
+- [ ] Entries are clear and descriptive
+- [ ] Related changes are grouped together
+- [ ] Format follows Keep a Changelog standard
+
 ## GitHub Issue Management
 
 ### Issue Tracking System
