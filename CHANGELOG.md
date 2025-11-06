@@ -8,7 +8,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Nothing yet
+- **Containerized Deployment Documentation** (2025-11-06)
+  - Created comprehensive DEPLOYMENT.md (639 lines)
+  - Package installation methods (Composer and Git clone)
+  - Docker deployment with complete docker-compose.yml example
+  - Kubernetes deployment configuration (ConfigMap, Secret, Deployment, Service)
+  - Deployment scripts and automation examples
+  - Environment-specific configurations (development, staging, production)
+  - Deployment checklists (pre-deployment, deployment steps, post-deployment)
+  - Troubleshooting deployment issues guide
+  - CI/CD automation examples with GitHub Actions
+  - Ready-to-use configurations for containerized Krayin CRM instances
 
 ### Changed
 - Nothing yet
