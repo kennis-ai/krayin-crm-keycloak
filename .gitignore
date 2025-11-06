@@ -5,6 +5,7 @@ node_modules/
 # IDE
 .idea/
 .vscode/
+.mcp.json
 *.swp
 *.swo
 *~
