@@ -69,9 +69,10 @@ class KeycloakSSOServiceProvider extends ServiceProvider
 
         // Load package resources
         $this->loadMigrationsFrom(__DIR__ . '/../Database/Migrations');
-        $this->loadViewsFrom(__DIR__ . '/../Resources/views', 'keycloak-sso');
-        $this->loadTranslationsFrom(__DIR__ . '/../Resources/lang', 'keycloak-sso');
+        $this->loadViewsFrom(__DIR__ . '/../Resources/views', 'keycloak');
+        $this->loadTranslationsFrom(__DIR__ . '/../Resources/lang', 'keycloak');
         $this->loadRoutesFrom(__DIR__ . '/../Routes/keycloak-routes.php');
+        $this->loadRoutesFrom(__DIR__ . '/../Routes/admin-routes.php');
 
         // Register middleware
         $this->registerMiddleware();
