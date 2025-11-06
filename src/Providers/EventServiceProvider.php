@@ -34,7 +34,7 @@ class EventServiceProvider extends ServiceProvider
          * Listeners can log errors, send notifications, or trigger fallback mechanisms.
          */
         \Webkul\KeycloakSSO\Events\KeycloakLoginFailed::class => [
-            // Listeners will be added in Phase 9
+            \Webkul\KeycloakSSO\Listeners\LogLoginFailure::class,
         ],
 
         /**
