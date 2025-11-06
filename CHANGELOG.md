@@ -8,6 +8,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Phase 7: Middleware and Guards** (2025-11-06)
+  - Complete KeycloakAuthenticate middleware for session validation
+  - Token validation with Keycloak introspection
+  - Automatic redirect to login for unauthenticated users
+  - Support for local authentication alongside Keycloak
+  - Graceful handling of invalid sessions with user logout
+  - Configurable auto-redirect to Keycloak login
+  - Complete KeycloakTokenRefresh middleware for automatic token refresh
+  - Proactive token refresh before expiration (configurable threshold)
+  - Seamless token refresh without user interruption
+  - Automatic session update with new tokens
+  - Configurable behavior on refresh failure (logout or continue)
+  - Token expiration checking with configurable threshold (default: 5 minutes)
+  - New translation keys for session expiration and token refresh failures
+  - Comprehensive logging for all middleware operations
+  - Support for custom authentication guards
+  - Intended URL preservation for post-login redirects
+
 - **Phase 6: User Provisioning and Role Mapping** (2025-11-06)
   - Complete RoleMappingService for Keycloak role synchronization
   - Keycloak to Krayin role mapping with configurable mappings

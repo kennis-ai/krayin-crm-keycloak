@@ -18,4 +18,6 @@ return [
     'logout_success' => 'Você foi desconectado com sucesso.',
     'logout_partial_success' => 'Você foi desconectado localmente, mas o logout do Keycloak pode ter falh ado.',
     'already_logged_out' => 'Você já está desconectado.',
+    'session_expired' => 'Sua sessão expirou. Por favor, faça login novamente.',
+    'token_refresh_failed' => 'Falha ao renovar sua sessão. Por favor, faça login novamente.',
 ];
