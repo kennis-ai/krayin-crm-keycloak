@@ -1,0 +1,93 @@
+{
+    "name": "webkul/laravel-keycloak-sso",
+    "description": "Enterprise-grade Keycloak Single Sign-On (SSO) integration for Krayin CRM",
+    "keywords": [
+        "krayin",
+        "krayin-crm",
+        "keycloak",
+        "sso",
+        "oauth2",
+        "openid-connect",
+        "authentication",
+        "laravel",
+        "webkul"
+    ],
+    "type": "library",
+    "license": "MIT",
+    "version": "1.0.0",
+    "authors": [
+        {
+            "name": "Kennis AI Team",
+            "email": "dev@kennis.ai",
+            "homepage": "https://kennis.ai",
+            "role": "Developer"
+        }
+    ],
+    "homepage": "https://github.com/kennis-ai/krayin-crm-keycloak",
+    "support": {
+        "email": "support@kennis.ai",
+        "issues": "https://github.com/kennis-ai/krayin-crm-keycloak/issues",
+        "docs": "https://github.com/kennis-ai/krayin-crm-keycloak/wiki",
+        "source": "https://github.com/kennis-ai/krayin-crm-keycloak"
+    },
+    "require": {
+        "php": "^8.2",
+        "laravel/framework": "^10.0|^11.0",
+        "laravel/socialite": "^5.0",
+        "socialiteproviders/keycloak": "^5.0",
+        "guzzlehttp/guzzle": "^7.0",
+        "konekt/concord": "^1.8"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^10.0",
+        "mockery/mockery": "^1.6",
+        "orchestra/testbench": "^8.0|^9.0",
+        "laravel/pint": "^1.0",
+        "nunomaduro/larastan": "^2.0",
+        "phpstan/phpstan": "^1.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Webkul\\KeycloakSSO\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Webkul\\KeycloakSSO\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Webkul\\KeycloakSSO\\Providers\\ModuleServiceProvider"
+            ],
+            "aliases": {
+                "KeycloakSSO": "Webkul\\KeycloakSSO\\Facades\\KeycloakSSO"
+            }
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit",
+        "test-coverage": "vendor/bin/phpunit --coverage-html coverage",
+        "check-style": "vendor/bin/pint --test",
+        "fix-style": "vendor/bin/pint",
+        "analyse": "vendor/bin/phpstan analyse"
+    },
+    "scripts-descriptions": {
+        "test": "Run the test suite",
+        "test-coverage": "Run tests with coverage report",
+        "check-style": "Check code style compliance",
+        "fix-style": "Fix code style issues",
+        "analyse": "Run static analysis"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "config": {
+        "sort-packages": true,
+        "optimize-autoloader": true,
+        "preferred-install": "dist",
+        "allow-plugins": {
+            "php-http/discovery": true
+        }
+    }
+}
