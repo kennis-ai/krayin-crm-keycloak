@@ -8,6 +8,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Phase 6: User Provisioning and Role Mapping** (2025-11-06)
+  - Complete RoleMappingService for Keycloak role synchronization
+  - Keycloak to Krayin role mapping with configurable mappings
+  - Support for one-to-one and one-to-many role mappings
+  - Default role fallback when no roles are mapped
+  - Safe role assignment with database transactions
+  - Role synchronization on every login (configurable)
+  - Complete UserProvisioningService for automatic user management
+  - Auto-creation of users from Keycloak authentication
+  - Email-based account linking for existing users
+  - User data synchronization (email, name, auth provider)
+  - Role extraction from multiple Keycloak claim locations (realm_access, resource_access, direct roles claim)
+  - Intelligent name extraction from Keycloak user data with fallbacks
+  - Name generation from email for users without proper names
+  - Comprehensive logging for all provisioning operations
+  - Configurable auto-provisioning and sync behavior
+  - Updated service provider with proper dependency injection
+
 - **Phase 5: Authentication Controller** (2025-11-06)
   - Complete KeycloakAuthController with three main actions
   - Redirect to Keycloak login with CSRF protection

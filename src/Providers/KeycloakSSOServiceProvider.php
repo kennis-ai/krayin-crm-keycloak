@@ -96,17 +96,22 @@ class KeycloakSSOServiceProvider extends ServiceProvider
             );
         });
 
-        // Register UserProvisioningService as singleton
-        $this->app->singleton(UserProvisioningService::class, function ($app) {
-            return new UserProvisioningService(
-                $app->make(RoleMappingService::class)
-            );
-        });
-
         // Register RoleMappingService as singleton
         $this->app->singleton(RoleMappingService::class, function ($app) {
             return new RoleMappingService(
-                $app['config']['keycloak.role_mapping']
+                $app['config']['keycloak.role_mapping'] ?? [],
+                $app['config']['keycloak.default_role'] ?? 'Sales',
+                $app['config']['keycloak.sync_roles'] ?? true
+            );
+        });
+
+        // Register UserProvisioningService as singleton
+        $this->app->singleton(UserProvisioningService::class, function ($app) {
+            return new UserProvisioningService(
+                $app->make(RoleMappingService::class),
+                $app->make(KeycloakService::class),
+                $app['config']['keycloak.auto_provision_users'] ?? true,
+                $app['config']['keycloak.sync_user_data'] ?? true
             );
         });
 
