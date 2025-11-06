@@ -8,6 +8,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Phase 5: Authentication Controller** (2025-11-06)
+  - Complete KeycloakAuthController with three main actions
+  - Redirect to Keycloak login with CSRF protection
+  - OAuth callback handling with user provisioning integration
+  - Single Logout (SLO) implementation with token revocation
+  - Session management (invalidation, regeneration, access token storage)
+  - Comprehensive error handling with fallback support
+  - Event firing for login success, login failure, and logout
+  - Bilingual translation files (English and Brazilian Portuguese)
+  - Graceful degradation when Keycloak is disabled or unavailable
+
 - **Phase 4: Keycloak Service Integration** (2025-11-06)
   - KeycloakClient HTTP service for Keycloak API communication
   - Complete KeycloakService with authentication flow methods
@@ -18,14 +29,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Custom exception hierarchy for error handling
   - Comprehensive logging for all operations
 
-### Fixed
-- None
-
 ### Changed
 - None
 
+### Fixed
+- None
+
 ### Security
-- Added CSRF protection for OAuth callbacks via state parameter validation
+- CSRF state parameter validation in OAuth callback
+- Session invalidation and token regeneration on logout
+- Secure error handling without exposing sensitive information
+- Comprehensive logging for security auditing
 - Implemented secure HTTP client with proper timeout and SSL verification
 - Added comprehensive error handling for connection failures
 
