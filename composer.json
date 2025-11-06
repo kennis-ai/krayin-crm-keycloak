@@ -14,22 +14,37 @@
     ],
     "type": "library",
     "license": "MIT",
-    "version": "1.0.0",
     "authors": [
         {
+            "name": "Fernando Possebon",
+            "email": "contato@kennis.com.br",
+            "homepage": "https://kennis.com.br",
+            "role": "Lead Developer"
+        },
+        {
             "name": "Kennis AI Team",
-            "email": "dev@kennis.ai",
-            "homepage": "https://kennis.ai",
+            "email": "contato@kennis.com.br",
+            "homepage": "https://kennis.com.br",
             "role": "Developer"
         }
     ],
     "homepage": "https://github.com/kennis-ai/krayin-crm-keycloak",
     "support": {
-        "email": "support@kennis.ai",
+        "email": "suporte@kennis.com.br",
         "issues": "https://github.com/kennis-ai/krayin-crm-keycloak/issues",
         "docs": "https://github.com/kennis-ai/krayin-crm-keycloak/wiki",
         "source": "https://github.com/kennis-ai/krayin-crm-keycloak"
     },
+    "funding": [
+        {
+            "type": "github",
+            "url": "https://github.com/sponsors/kennis-ai"
+        },
+        {
+            "type": "other",
+            "url": "https://kennis.com.br"
+        }
+    ],
     "require": {
         "php": "^8.2",
         "laravel/framework": "^10.0|^11.0",
