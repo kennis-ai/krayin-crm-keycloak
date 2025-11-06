@@ -122,6 +122,223 @@ __('keycloak::user.welcome', ['name' => $user->name])
 - User guides and installation instructions → Wiki
 - Change logs and version history → Wiki
 
+### Mermaid Diagrams in Wiki Documentation
+Whenever possible and applicable, use Mermaid diagrams to enhance Wiki documentation with visual representations. GitHub Wiki supports Mermaid diagrams natively.
+
+#### When to Use Mermaid Diagrams
+- **Architecture Overviews**: System architecture, component relationships
+- **Authentication Flows**: OAuth2/OpenID Connect flow diagrams
+- **Data Flow**: How data moves through the system
+- **Process Documentation**: Step-by-step workflows
+- **Database Relationships**: Entity relationships and schema
+- **Sequence Diagrams**: API interactions, user journeys
+- **State Diagrams**: Authentication states, user provisioning states
+- **Class Diagrams**: Service relationships, inheritance hierarchies
+
+#### Diagram Types and Use Cases
+
+##### 1. Flowcharts - Authentication Flow
+```mermaid
+flowchart TD
+    A[User clicks login] --> B[Redirect to Keycloak]
+    B --> C[User authenticates]
+    C --> D[Keycloak returns code]
+    D --> E[Exchange code for tokens]
+    E --> F[Create/Update user]
+    F --> G[Login complete]
+```
+
+##### 2. Sequence Diagrams - API Interactions
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant KC as Krayin CRM
+    participant KS as Keycloak Server
+    
+    U->>KC: Click Login
+    KC->>KS: Redirect to authorization endpoint
+    KS->>U: Show login form
+    U->>KS: Submit credentials
+    KS->>KC: Redirect with auth code
+    KC->>KS: Exchange code for tokens
+    KS-->>KC: Return access/refresh tokens
+    KC->>KC: Provision/update user
+    KC->>U: Login successful
+```
+
+##### 3. Class Diagrams - Service Architecture
+```mermaid
+classDiagram
+    class KeycloakService {
+        +getAuthorizationUrl()
+        +handleCallback()
+        +refreshToken()
+        +getUserInfo()
+    }
+    class UserProvisioningService {
+        +provisionUser()
+        +syncUser()
+        +updateUserRoles()
+    }
+    class RoleMappingService {
+        +mapKeycloakRoles()
+        +getKrayinPermissions()
+    }
+    
+    KeycloakService --> UserProvisioningService
+    UserProvisioningService --> RoleMappingService
+```
+
+##### 4. State Diagrams - User States
+```mermaid
+stateDiagram-v2
+    [*] --> Unauthenticated
+    Unauthenticated --> Authenticating: Login initiated
+    Authenticating --> Authenticated: Success
+    Authenticating --> Failed: Error
+    Failed --> Unauthenticated: Retry
+    Authenticated --> TokenExpired: Token expires
+    TokenExpired --> Authenticated: Refresh success
+    TokenExpired --> Unauthenticated: Refresh failed
+    Authenticated --> [*]: Logout
+```
+
+##### 5. Entity Relationship - Database Schema
+```mermaid
+erDiagram
+    users {
+        bigint id PK
+        string name
+        string email UK
+        string keycloak_id UK
+        enum auth_provider
+        text keycloak_refresh_token
+        timestamp keycloak_token_expires_at
+    }
+    roles {
+        bigint id PK
+        string name UK
+        string guard_name
+    }
+    model_has_roles {
+        bigint role_id FK
+        bigint model_id FK
+        string model_type
+    }
+    
+    users ||--o{ model_has_roles : has
+    roles ||--o{ model_has_roles : assigned_to
+```
+
+##### 6. System Architecture - Component Overview
+```mermaid
+graph TB
+    subgraph "Krayin CRM"
+        KC[KeycloakController]
+        KS[KeycloakService]
+        UP[UserProvisioningService]
+        RM[RoleMappingService]
+        MW[AuthMiddleware]
+    end
+    
+    subgraph "Keycloak Server"
+        AUTH[Authorization Server]
+        TOKEN[Token Endpoint]
+        USER[UserInfo Endpoint]
+    end
+    
+    subgraph "Database"
+        USERS[Users Table]
+        ROLES[Roles Table]
+    end
+    
+    KC --> KS
+    KS --> AUTH
+    KS --> TOKEN
+    KS --> USER
+    KS --> UP
+    UP --> USERS
+    UP --> RM
+    RM --> ROLES
+    MW --> KS
+```
+
+#### Implementation Guidelines
+
+##### Placement in Wiki Pages
+- Place diagrams at the beginning of sections for overview
+- Use inline diagrams to illustrate specific concepts
+- Add diagrams to complement, not replace, textual explanations
+
+##### Diagram Standards
+- **Consistent Styling**: Use consistent colors and shapes across all diagrams
+- **Clear Labels**: Use descriptive, concise labels
+- **Logical Flow**: Ensure diagrams flow left-to-right or top-to-bottom
+- **Appropriate Complexity**: Keep diagrams focused and not overly complex
+
+##### Color Conventions
+```mermaid
+flowchart TD
+    A[User Action] --> B[System Process]
+    B --> C{Decision Point}
+    C -->|Success| D[Success State]
+    C -->|Error| E[Error State]
+    
+    style A fill:#e1f5fe
+    style B fill:#fff3e0
+    style C fill:#f3e5f5
+    style D fill:#e8f5e8
+    style E fill:#ffebee
+```
+
+- **Blue** (`#e1f5fe`): User actions, external inputs
+- **Orange** (`#fff3e0`): System processes, internal operations
+- **Purple** (`#f3e5f5`): Decision points, conditional logic
+- **Green** (`#e8f5e8`): Success states, positive outcomes
+- **Red** (`#ffebee`): Error states, failures
+
+##### Documentation Structure with Diagrams
+Each Wiki page should follow this pattern when applicable:
+
+1. **Overview Diagram**: High-level system/process overview
+2. **Detailed Sections**: Each with relevant detailed diagrams
+3. **Implementation Examples**: Code samples with sequence diagrams
+4. **Troubleshooting**: Flow charts for common issues
+
+##### Example: Authentication Guide Structure
+```
+# Keycloak Authentication Guide
+
+## Overview
+[System Architecture Diagram]
+
+## Authentication Flow
+[Sequence Diagram of OAuth2 flow]
+
+## Implementation
+### Service Configuration
+[Class diagram showing dependencies]
+
+### Database Schema
+[Entity relationship diagram]
+
+## Troubleshooting
+[Flowchart for common authentication issues]
+```
+
+#### Best Practices
+- **Version Control**: Include diagram source in `.md` files for easy updates
+- **Accessibility**: Always provide alt text or descriptions for diagrams
+- **Maintenance**: Update diagrams when code changes
+- **Testing**: Verify Mermaid syntax renders correctly in GitHub
+- **Documentation**: Document complex diagram logic in accompanying text
+
+#### Tools for Diagram Development
+- **GitHub Web Interface**: Edit Wiki pages directly with live preview
+- **VS Code Extensions**: Mermaid preview extensions for development
+- **Mermaid Live Editor**: https://mermaid.live for testing complex diagrams
+- **Documentation**: Official Mermaid docs at https://mermaid.js.org
+
 ## Version Control
 - Follow semantic versioning (MAJOR.MINOR.PATCH)
 - Update version in `composer.json` and relevant config files
