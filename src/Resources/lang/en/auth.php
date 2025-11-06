@@ -20,4 +20,6 @@ return [
     'already_logged_out' => 'You are already logged out.',
     'session_expired' => 'Your session has expired. Please login again.',
     'token_refresh_failed' => 'Failed to refresh your session. Please login again.',
+    'login_with_keycloak' => 'Login with Keycloak SSO',
+    'or_login_with' => 'Or continue with',
 ];

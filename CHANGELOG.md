@@ -8,6 +8,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Phase 8: Routes and Integration** (2025-11-06)
+  - Complete route definitions for Keycloak authentication flow
+  - Login route with OAuth2 authorization redirect
+  - Callback route for handling OAuth2 responses
+  - Logout route with Single Logout (SLO) support
+  - Conditional route registration (only when Keycloak is enabled)
+  - Complete login button view component with Blade template
+  - Responsive and accessible login button design
+  - Keycloak icon included in button
+  - Divider component with "Or continue with" text
+  - Dark mode support for login button
+  - Hover, focus, and active states for better UX
+  - Customizable button with optional parameters
+  - Comprehensive integration documentation
+  - Step-by-step integration guide for Krayin login page
+  - Customization examples and troubleshooting guide
+  - New translation keys for login button
+  - Route protection with web middleware
+  - Logout route protected with auth middleware
+  - Alternative route definitions commented for flexibility
+
 - **Phase 7: Middleware and Guards** (2025-11-06)
   - Complete KeycloakAuthenticate middleware for session validation
   - Token validation with Keycloak introspection
