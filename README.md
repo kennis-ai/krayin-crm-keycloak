@@ -239,7 +239,7 @@ See [CHANGELOG.md](CHANGELOG.md) for version history.
 
 ## Security
 
-If you discover a security vulnerability, please email security@kennis.ai instead of using the issue tracker.
+If you discover a security vulnerability, please email contato@kennis.com.br instead of using the issue tracker.
 
 ## License
 
@@ -247,8 +247,8 @@ This package is open-sourced software licensed under the [MIT license](LICENSE).
 
 ## Credits
 
-- **Author**: Kennis AI Team
-- **Company**: [Kennis AI](https://kennis.ai)
+- **Author**: Fernando Possebon ([@possebon](https://github.com/possebon))
+- **Company**: [Kennis AI](https://kennis.com.br)
 - **Repository**: [kennis-ai/krayin-crm-keycloak](https://github.com/kennis-ai/krayin-crm-keycloak)
 - Built for [Krayin CRM](https://krayincrm.com)
 - Powered by [Keycloak](https://www.keycloak.org)
@@ -258,7 +258,7 @@ This package is open-sourced software licensed under the [MIT license](LICENSE).
 - 📖 [Documentation](https://github.com/kennis-ai/krayin-crm-keycloak/wiki)
 - 🐛 [Issue Tracker](https://github.com/kennis-ai/krayin-crm-keycloak/issues)
 - 💬 [Discussions](https://github.com/kennis-ai/krayin-crm-keycloak/discussions)
-- 📧 Email Support: support@kennis.ai
+- 📧 Email Support: suporte@kennis.com.br
 
 ## Roadmap
 
