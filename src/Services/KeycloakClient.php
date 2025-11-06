@@ -10,6 +10,7 @@ use Webkul\KeycloakSSO\Exceptions\KeycloakAuthenticationException;
 use Webkul\KeycloakSSO\Exceptions\KeycloakConnectionException;
 use Webkul\KeycloakSSO\Exceptions\KeycloakException;
 use Webkul\KeycloakSSO\Exceptions\KeycloakTokenException;
+use Webkul\KeycloakSSO\Helpers\ErrorHandler;
 
 /**
  * HTTP client for Keycloak API communication
@@ -185,30 +186,32 @@ class KeycloakClient
     protected function requestTokens(array $params): array
     {
         try {
-            $response = $this->client->post($this->getTokenEndpoint(), [
-                'form_params' => $params,
-                'headers' => [
-                    'Accept' => 'application/json',
-                ],
-            ]);
+            return ErrorHandler::retry(function () use ($params) {
+                $response = $this->client->post($this->getTokenEndpoint(), [
+                    'form_params' => $params,
+                    'headers' => [
+                        'Accept' => 'application/json',
+                    ],
+                ]);
 
-            $statusCode = $response->getStatusCode();
-            $body = json_decode($response->getBody()->getContents(), true);
+                $statusCode = $response->getStatusCode();
+                $body = json_decode($response->getBody()->getContents(), true);
 
-            if ($statusCode !== 200) {
-                $errorMessage = $body['error_description'] ?? $body['error'] ?? 'Token request failed';
-                throw new KeycloakAuthenticationException($errorMessage, $statusCode);
-            }
+                if ($statusCode !== 200) {
+                    $errorMessage = $body['error_description'] ?? $body['error'] ?? 'Token request failed';
+                    throw new KeycloakAuthenticationException($errorMessage, $statusCode);
+                }
 
-            return $body;
+                return $body;
+            });
         } catch (ConnectException $e) {
-            Log::error('Keycloak connection failed', [
-                'exception' => $e->getMessage(),
+            ErrorHandler::handle($e, 'Keycloak connection failed during token request', [
+                'endpoint' => $this->getTokenEndpoint(),
             ]);
             throw KeycloakConnectionException::unreachable();
         } catch (RequestException $e) {
-            Log::error('Keycloak request failed', [
-                'exception' => $e->getMessage(),
+            ErrorHandler::handle($e, 'Keycloak token request failed', [
+                'endpoint' => $this->getTokenEndpoint(),
             ]);
             throw new KeycloakAuthenticationException(
                 'Token request failed: '.$e->getMessage(),
@@ -230,30 +233,32 @@ class KeycloakClient
     public function getUserInfo(string $accessToken): array
     {
         try {
-            $response = $this->client->get($this->getUserInfoEndpoint(), [
-                'headers' => [
-                    'Accept' => 'application/json',
-                    'Authorization' => 'Bearer '.$accessToken,
-                ],
-            ]);
+            return ErrorHandler::retry(function () use ($accessToken) {
+                $response = $this->client->get($this->getUserInfoEndpoint(), [
+                    'headers' => [
+                        'Accept' => 'application/json',
+                        'Authorization' => 'Bearer '.$accessToken,
+                    ],
+                ]);
 
-            $statusCode = $response->getStatusCode();
-            $body = json_decode($response->getBody()->getContents(), true);
+                $statusCode = $response->getStatusCode();
+                $body = json_decode($response->getBody()->getContents(), true);
 
-            if ($statusCode !== 200) {
-                $errorMessage = $body['error_description'] ?? $body['error'] ?? 'Failed to retrieve user info';
-                throw new KeycloakAuthenticationException($errorMessage, $statusCode);
-            }
+                if ($statusCode !== 200) {
+                    $errorMessage = $body['error_description'] ?? $body['error'] ?? 'Failed to retrieve user info';
+                    throw new KeycloakAuthenticationException($errorMessage, $statusCode);
+                }
 
-            return $body;
+                return $body;
+            });
         } catch (ConnectException $e) {
-            Log::error('Keycloak connection failed', [
-                'exception' => $e->getMessage(),
+            ErrorHandler::handle($e, 'Keycloak connection failed during user info retrieval', [
+                'endpoint' => $this->getUserInfoEndpoint(),
             ]);
             throw KeycloakConnectionException::unreachable();
         } catch (RequestException $e) {
-            Log::error('Keycloak request failed', [
-                'exception' => $e->getMessage(),
+            ErrorHandler::handle($e, 'Keycloak user info request failed', [
+                'endpoint' => $this->getUserInfoEndpoint(),
             ]);
             throw new KeycloakAuthenticationException(
                 'User info request failed: '.$e->getMessage(),
@@ -277,34 +282,36 @@ class KeycloakClient
     public function introspectToken(string $token, string $clientId, string $clientSecret): array
     {
         try {
-            $response = $this->client->post($this->getIntrospectEndpoint(), [
-                'form_params' => [
-                    'token' => $token,
-                    'client_id' => $clientId,
-                    'client_secret' => $clientSecret,
-                ],
-                'headers' => [
-                    'Accept' => 'application/json',
-                ],
-            ]);
+            return ErrorHandler::retry(function () use ($token, $clientId, $clientSecret) {
+                $response = $this->client->post($this->getIntrospectEndpoint(), [
+                    'form_params' => [
+                        'token' => $token,
+                        'client_id' => $clientId,
+                        'client_secret' => $clientSecret,
+                    ],
+                    'headers' => [
+                        'Accept' => 'application/json',
+                    ],
+                ]);
 
-            $statusCode = $response->getStatusCode();
-            $body = json_decode($response->getBody()->getContents(), true);
+                $statusCode = $response->getStatusCode();
+                $body = json_decode($response->getBody()->getContents(), true);
 
-            if ($statusCode !== 200) {
-                $errorMessage = $body['error_description'] ?? $body['error'] ?? 'Token introspection failed';
-                throw new KeycloakException($errorMessage, $statusCode);
-            }
+                if ($statusCode !== 200) {
+                    $errorMessage = $body['error_description'] ?? $body['error'] ?? 'Token introspection failed';
+                    throw new KeycloakException($errorMessage, $statusCode);
+                }
 
-            return $body;
+                return $body;
+            });
         } catch (ConnectException $e) {
-            Log::error('Keycloak connection failed', [
-                'exception' => $e->getMessage(),
+            ErrorHandler::handle($e, 'Keycloak connection failed during token introspection', [
+                'endpoint' => $this->getIntrospectEndpoint(),
             ]);
             throw KeycloakConnectionException::unreachable();
         } catch (RequestException $e) {
-            Log::error('Keycloak request failed', [
-                'exception' => $e->getMessage(),
+            ErrorHandler::handle($e, 'Keycloak token introspection failed', [
+                'endpoint' => $this->getIntrospectEndpoint(),
             ]);
             throw new KeycloakException(
                 'Token introspection failed: '.$e->getMessage(),
@@ -354,13 +361,13 @@ class KeycloakClient
 
             return false;
         } catch (ConnectException $e) {
-            Log::error('Keycloak connection failed during logout', [
-                'exception' => $e->getMessage(),
+            ErrorHandler::handle($e, 'Keycloak connection failed during logout', [
+                'endpoint' => $this->getLogoutEndpoint(),
             ]);
             throw KeycloakConnectionException::unreachable();
         } catch (RequestException $e) {
-            Log::warning('Keycloak logout request failed', [
-                'exception' => $e->getMessage(),
+            ErrorHandler::handle($e, 'Keycloak logout request failed', [
+                'endpoint' => $this->getLogoutEndpoint(),
             ]);
 
             // Don't throw exception for logout failures

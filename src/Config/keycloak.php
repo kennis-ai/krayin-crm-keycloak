@@ -159,4 +159,30 @@ return [
     |
     */
     'debug' => env('KEYCLOAK_DEBUG', false),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Error Handling Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Configure how errors are handled and displayed to users.
+    |
+    */
+
+    'error_handling' => [
+        // Show detailed error messages to users (not recommended for production)
+        'show_details' => env('KEYCLOAK_SHOW_ERROR_DETAILS', false),
+
+        // Log full stack traces for errors
+        'log_stack_traces' => env('KEYCLOAK_LOG_STACK_TRACES', true),
+
+        // Maximum number of retry attempts before failing
+        'max_retries' => env('KEYCLOAK_MAX_RETRIES', 3),
+
+        // Delay between retry attempts in milliseconds
+        'retry_delay' => env('KEYCLOAK_RETRY_DELAY', 1000),
+
+        // Enable exponential backoff for retries
+        'exponential_backoff' => env('KEYCLOAK_EXPONENTIAL_BACKOFF', true),
+    ],
 ];

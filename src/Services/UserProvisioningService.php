@@ -6,6 +6,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Webkul\User\Models\User;
+use Webkul\KeycloakSSO\Exceptions\KeycloakUserProvisioningException;
+use Webkul\KeycloakSSO\Helpers\ErrorHandler;
 
 /**
  * UserProvisioningService
@@ -75,60 +77,82 @@ class UserProvisioningService
      */
     public function findOrCreateUser(array $keycloakUser): User
     {
-        $keycloakId = $keycloakUser['sub'] ?? null;
+        try {
+            $keycloakId = $keycloakUser['sub'] ?? null;
 
-        if (! $keycloakId) {
-            throw new \Exception('Keycloak user ID (sub) not provided');
-        }
-
-        // Try to find existing user by Keycloak ID
-        $user = User::where('keycloak_id', $keycloakId)->first();
-
-        if ($user) {
-            Log::info('Found existing user by Keycloak ID', [
-                'user_id' => $user->id,
-                'keycloak_id' => $keycloakId,
-            ]);
-
-            // Update user data if sync is enabled
-            if ($this->syncUserData) {
-                $user = $this->updateUserFromKeycloak($user, $keycloakUser);
+            if (! $keycloakId) {
+                throw KeycloakUserProvisioningException::missingRequiredField('sub');
             }
 
-            return $user;
-        }
-
-        // Try to find by email (for linking existing accounts)
-        $email = $keycloakUser['email'] ?? null;
-
-        if ($email) {
-            $user = User::where('email', $email)->first();
+            // Try to find existing user by Keycloak ID
+            $user = User::where('keycloak_id', $keycloakId)->first();
 
             if ($user) {
-                Log::info('Found existing user by email, linking with Keycloak', [
+                Log::info('Found existing user by Keycloak ID', [
                     'user_id' => $user->id,
-                    'email' => $email,
                     'keycloak_id' => $keycloakId,
                 ]);
 
-                // Link existing user with Keycloak
-                $user->keycloak_id = $keycloakId;
-                $user->auth_provider = 'keycloak';
-                $user->save();
-
-                // Update user data
-                $user = $this->updateUserFromKeycloak($user, $keycloakUser);
+                // Update user data if sync is enabled
+                if ($this->syncUserData) {
+                    $user = $this->updateUserFromKeycloak($user, $keycloakUser);
+                }
 
                 return $user;
             }
-        }
 
-        // Create new user if auto-provisioning is enabled
-        if ($this->autoProvision) {
-            return $this->provisionUser($keycloakUser);
-        }
+            // Try to find by email (for linking existing accounts)
+            $email = $keycloakUser['email'] ?? null;
 
-        throw new \Exception('User not found and auto-provisioning is disabled');
+            if ($email) {
+                $user = User::where('email', $email)->first();
+
+                if ($user) {
+                    // Check if user is already using a different auth provider
+                    if ($user->auth_provider && $user->auth_provider !== 'keycloak' && $user->keycloak_id) {
+                        throw KeycloakUserProvisioningException::duplicateUser($email);
+                    }
+
+                    Log::info('Found existing user by email, linking with Keycloak', [
+                        'user_id' => $user->id,
+                        'email' => $email,
+                        'keycloak_id' => $keycloakId,
+                    ]);
+
+                    // Link existing user with Keycloak
+                    $user->keycloak_id = $keycloakId;
+                    $user->auth_provider = 'keycloak';
+                    $user->save();
+
+                    // Update user data
+                    $user = $this->updateUserFromKeycloak($user, $keycloakUser);
+
+                    return $user;
+                }
+            }
+
+            // Create new user if auto-provisioning is enabled
+            if ($this->autoProvision) {
+                return $this->provisionUser($keycloakUser);
+            }
+
+            throw KeycloakUserProvisioningException::invalidUserData('User not found and auto-provisioning is disabled');
+        } catch (KeycloakUserProvisioningException $e) {
+            ErrorHandler::handle($e, 'User provisioning failed', [
+                'keycloak_id' => $keycloakUser['sub'] ?? 'unknown',
+                'email' => $keycloakUser['email'] ?? 'unknown',
+            ]);
+            throw $e;
+        } catch (\Exception $e) {
+            $exception = KeycloakUserProvisioningException::creationFailed(
+                $keycloakUser['email'] ?? 'unknown',
+                $e->getMessage()
+            );
+            ErrorHandler::handle($exception, 'Unexpected error during user provisioning', [
+                'keycloak_data' => array_keys($keycloakUser),
+            ]);
+            throw $exception;
+        }
     }
 
     /**
@@ -147,11 +171,11 @@ class UserProvisioningService
             $name = $keycloakUser['name'] ?? $keycloakUser['preferred_username'] ?? null;
 
             if (! $keycloakId) {
-                throw new \Exception('Keycloak user ID (sub) is required');
+                throw KeycloakUserProvisioningException::missingRequiredField('sub');
             }
 
             if (! $email) {
-                throw new \Exception('Email is required to create user');
+                throw KeycloakUserProvisioningException::missingRequiredField('email');
             }
 
             Log::info('Provisioning new user from Keycloak', [
@@ -190,13 +214,21 @@ class UserProvisioningService
             $this->syncUserRoles($user, $keycloakUser);
 
             return $user;
-        } catch (\Exception $e) {
-            Log::error('Failed to provision user from Keycloak', [
-                'keycloak_user' => $keycloakUser,
-                'exception' => $e->getMessage(),
+        } catch (KeycloakUserProvisioningException $e) {
+            ErrorHandler::handle($e, 'Failed to provision user from Keycloak', [
+                'keycloak_id' => $keycloakUser['sub'] ?? 'unknown',
+                'email' => $keycloakUser['email'] ?? 'unknown',
             ]);
-
             throw $e;
+        } catch (\Exception $e) {
+            $exception = KeycloakUserProvisioningException::creationFailed(
+                $email ?? 'unknown',
+                $e->getMessage()
+            );
+            ErrorHandler::handle($exception, 'Unexpected error during user provisioning', [
+                'keycloak_data' => array_keys($keycloakUser),
+            ]);
+            throw $exception;
         }
     }
 
@@ -251,12 +283,15 @@ class UserProvisioningService
 
             return $user;
         } catch (\Exception $e) {
-            Log::error('Failed to update user from Keycloak', [
+            $exception = KeycloakUserProvisioningException::updateFailed(
+                $user->email,
+                $e->getMessage()
+            );
+            ErrorHandler::handle($exception, 'Failed to update user from Keycloak', [
                 'user_id' => $user->id,
-                'exception' => $e->getMessage(),
+                'keycloak_id' => $keycloakData['sub'] ?? 'unknown',
             ]);
-
-            throw $e;
+            throw $exception;
         }
     }
 
@@ -296,9 +331,13 @@ class UserProvisioningService
             // Sync roles using role mapping service
             $this->roleMappingService->syncRoles($user, $keycloakRoles);
         } catch (\Exception $e) {
-            Log::error('Failed to sync user roles from Keycloak', [
+            $exception = KeycloakUserProvisioningException::roleMappingFailed(
+                $user->email,
+                $e->getMessage()
+            );
+            ErrorHandler::handle($exception, 'Failed to sync user roles from Keycloak', [
                 'user_id' => $user->id,
-                'exception' => $e->getMessage(),
+                'keycloak_roles' => $keycloakRoles ?? [],
             ]);
 
             // Don't throw exception - role sync failure shouldn't prevent login

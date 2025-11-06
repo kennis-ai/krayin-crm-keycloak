@@ -11,7 +11,10 @@ use Webkul\KeycloakSSO\Events\KeycloakLoginFailed;
 use Webkul\KeycloakSSO\Events\KeycloakLoginSuccessful;
 use Webkul\KeycloakSSO\Events\KeycloakLogoutSuccessful;
 use Webkul\KeycloakSSO\Exceptions\KeycloakAuthenticationException;
+use Webkul\KeycloakSSO\Exceptions\KeycloakConnectionException;
 use Webkul\KeycloakSSO\Exceptions\KeycloakException;
+use Webkul\KeycloakSSO\Exceptions\KeycloakUserProvisioningException;
+use Webkul\KeycloakSSO\Helpers\ErrorHandler;
 use Webkul\KeycloakSSO\Services\KeycloakService;
 use Webkul\KeycloakSSO\Services\UserProvisioningService;
 
@@ -76,9 +79,15 @@ class KeycloakAuthController extends Controller
             ]);
 
             return redirect()->away($authorizationUrl);
+        } catch (KeycloakConnectionException $e) {
+            ErrorHandler::handle($e, 'Failed to redirect to Keycloak - connection error', [
+                'keycloak_enabled' => config('keycloak.enabled'),
+            ]);
+
+            return $this->handleAuthenticationError($e, 'connection');
         } catch (KeycloakException $e) {
-            Log::error('Failed to redirect to Keycloak', [
-                'exception' => $e->getMessage(),
+            ErrorHandler::handle($e, 'Failed to redirect to Keycloak', [
+                'keycloak_enabled' => config('keycloak.enabled'),
             ]);
 
             return $this->handleAuthenticationError($e);
@@ -139,19 +148,36 @@ class KeycloakAuthController extends Controller
             return redirect()
                 ->intended(route('admin.dashboard.index'))
                 ->with('success', trans('keycloak-sso::auth.login_success'));
-        } catch (KeycloakAuthenticationException $e) {
-            Log::error('Keycloak authentication failed', [
-                'exception' => $e->getMessage(),
-                'code' => $e->getCode(),
+        } catch (KeycloakUserProvisioningException $e) {
+            ErrorHandler::handle($e, 'User provisioning failed during Keycloak callback', [
+                'request_params' => array_keys($request->all()),
             ]);
 
             // Fire failed login event
             event(new KeycloakLoginFailed($e, $request->all()));
 
-            return $this->handleAuthenticationError($e);
+            return $this->handleAuthenticationError($e, 'provisioning');
+        } catch (KeycloakAuthenticationException $e) {
+            ErrorHandler::handle($e, 'Keycloak authentication failed', [
+                'request_params' => array_keys($request->all()),
+            ]);
+
+            // Fire failed login event
+            event(new KeycloakLoginFailed($e, $request->all()));
+
+            return $this->handleAuthenticationError($e, 'authentication');
+        } catch (KeycloakConnectionException $e) {
+            ErrorHandler::handle($e, 'Keycloak connection error during callback', [
+                'request_params' => array_keys($request->all()),
+            ]);
+
+            // Fire failed login event
+            event(new KeycloakLoginFailed($e, $request->all()));
+
+            return $this->handleAuthenticationError($e, 'connection');
         } catch (KeycloakException $e) {
-            Log::error('Keycloak callback error', [
-                'exception' => $e->getMessage(),
+            ErrorHandler::handle($e, 'Keycloak callback error', [
+                'request_params' => array_keys($request->all()),
             ]);
 
             // Fire failed login event
@@ -159,10 +185,12 @@ class KeycloakAuthController extends Controller
 
             return $this->handleAuthenticationError($e);
         } catch (\Exception $e) {
-            Log::error('Unexpected error during Keycloak callback', [
-                'exception' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
+            ErrorHandler::handle($e, 'Unexpected error during Keycloak callback', [
+                'request_params' => array_keys($request->all()),
             ]);
+
+            // Fire failed login event
+            event(new KeycloakLoginFailed($e, $request->all()));
 
             return $this->handleAuthenticationError($e);
         }
@@ -234,12 +262,15 @@ class KeycloakAuthController extends Controller
                 ->route('admin.session.create')
                 ->with('success', trans('keycloak-sso::auth.logout_success'));
         } catch (\Exception $e) {
-            Log::error('Error during logout', [
-                'exception' => $e->getMessage(),
+            ErrorHandler::handle($e, 'Error during Keycloak logout', [
+                'user_id' => $user->id ?? 'unknown',
+                'is_keycloak_user' => $user?->isKeycloakUser() ?? false,
             ]);
 
             // Still logout locally even if Keycloak logout fails
-            Auth::guard('user')->logout();
+            if (Auth::guard('user')->check()) {
+                Auth::guard('user')->logout();
+            }
             $request->session()->invalidate();
             $request->session()->regenerateToken();
 
@@ -253,24 +284,37 @@ class KeycloakAuthController extends Controller
      * Handle authentication error with appropriate redirect.
      *
      * @param  \Exception  $exception
+     * @param  string|null  $errorType
      * @return RedirectResponse
      */
-    protected function handleAuthenticationError(\Exception $exception): RedirectResponse
+    protected function handleAuthenticationError(\Exception $exception, ?string $errorType = null): RedirectResponse
     {
         // Check if fallback to local auth is enabled
         $allowLocalAuth = config('keycloak.allow_local_auth', true);
         $fallbackOnError = config('keycloak.fallback_on_error', true);
 
+        // Get user-friendly error message
+        $userMessage = ErrorHandler::getUserMessage($exception);
+
+        // Add specific fallback message for connection errors
+        if ($errorType === 'connection' && $fallbackOnError && $allowLocalAuth) {
+            return redirect()
+                ->route('admin.session.create')
+                ->with('warning', trans('keycloak::errors.fallback.keycloak_unavailable'))
+                ->with('info', $userMessage);
+        }
+
+        // Generic fallback for other errors
         if ($fallbackOnError && $allowLocalAuth) {
             return redirect()
                 ->route('admin.session.create')
-                ->with('error', trans('keycloak-sso::auth.sso_failed_fallback'))
-                ->with('keycloak_error', $exception->getMessage());
+                ->with('error', $userMessage)
+                ->with('info', trans('keycloak::errors.fallback.using_local_auth'));
         }
 
+        // No fallback - show error
         return redirect()
             ->route('admin.session.create')
-            ->with('error', trans('keycloak-sso::auth.sso_failed'))
-            ->with('keycloak_error', $exception->getMessage());
+            ->with('error', $userMessage);
     }
 }
