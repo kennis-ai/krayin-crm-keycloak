@@ -214,7 +214,8 @@ For more troubleshooting tips, see the [Wiki](../../wiki).
 - [Implementation Plan](.kennis/IMPLEMENTATION_PLAN.md)
 - [Architecture Documentation](.kennis/ARCHITECTURE.md)
 - [API Reference](.kennis/API_REFERENCE.md)
-- [Wiki](../../wiki) - User guides and tutorials
+- [Development Notes](.kennis/DEVELOPMENT_NOTES.md)
+- [Wiki](https://github.com/kennis-ai/krayin-crm-keycloak/wiki) - User guides and tutorials
 
 ## Contributing
 
@@ -238,7 +239,7 @@ See [CHANGELOG.md](CHANGELOG.md) for version history.
 
 ## Security
 
-If you discover a security vulnerability, please email security@example.com instead of using the issue tracker.
+If you discover a security vulnerability, please email security@kennis.ai instead of using the issue tracker.
 
 ## License
 
@@ -246,17 +247,18 @@ This package is open-sourced software licensed under the [MIT license](LICENSE).
 
 ## Credits
 
-- **Author**: [Your Name](https://github.com/yourusername)
-- **Company**: [Your Company](https://yourcompany.com)
+- **Author**: Kennis AI Team
+- **Company**: [Kennis AI](https://kennis.ai)
+- **Repository**: [kennis-ai/krayin-crm-keycloak](https://github.com/kennis-ai/krayin-crm-keycloak)
 - Built for [Krayin CRM](https://krayincrm.com)
 - Powered by [Keycloak](https://www.keycloak.org)
 
 ## Support
 
-- 📖 [Documentation](../../wiki)
-- 🐛 [Issue Tracker](../../issues)
-- 💬 [Discussions](../../discussions)
-- 📧 [Email Support](mailto:support@example.com)
+- 📖 [Documentation](https://github.com/kennis-ai/krayin-crm-keycloak/wiki)
+- 🐛 [Issue Tracker](https://github.com/kennis-ai/krayin-crm-keycloak/issues)
+- 💬 [Discussions](https://github.com/kennis-ai/krayin-crm-keycloak/discussions)
+- 📧 Email Support: support@kennis.ai
 
 ## Roadmap
 
